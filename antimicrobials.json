@@ -1,0 +1,117 @@
+{
+  "title": "Shoot the Bug — educational demo data",
+  "disclaimer": "Simplified fictionalized game rules for education only; not clinical guidance. Real susceptibility and treatment decisions require validated testing and clinical context.",
+  "scoring": {
+    "susceptible": 10,
+    "resistant": -5,
+    "enzymeInhibitedByCompatibleAddon": 10
+  },
+  "antimicrobials": [
+    {
+      "id": "penicillin",
+      "name": "Penicillin",
+      "class": "beta-lactam",
+      "description": "Base antimicrobial for the illustrative beta-lactam sensitivity examples."
+    },
+    {
+      "id": "amoxicillin",
+      "name": "Amoxicillin",
+      "class": "beta-lactam",
+      "description": "Paired with clavulanate in an illustrative enzyme-inhibition example."
+    },
+    {
+      "id": "piperacillin",
+      "name": "Piperacillin",
+      "class": "beta-lactam",
+      "description": "Paired with tazobactam in an illustrative enzyme-inhibition example."
+    },
+    {
+      "id": "ceftazidime",
+      "name": "Ceftazidime",
+      "class": "cephalosporin beta-lactam",
+      "description": "Paired with avibactam in an illustrative enzyme-inhibition example."
+    },
+    {
+      "id": "vancomycin",
+      "name": "Vancomycin",
+      "class": "glycopeptide",
+      "description": "Separate alternative in the simplified MRSA game example."
+    }
+  ],
+  "addons": [
+    {
+      "id": "clavulanate",
+      "name": "Clavulanate",
+      "compatibleGunIds": ["amoxicillin"],
+      "description": "Beta-lactamase inhibitor in the example; does not defeat MRSA resistance."
+    },
+    {
+      "id": "tazobactam",
+      "name": "Tazobactam",
+      "compatibleGunIds": ["piperacillin"],
+      "description": "Beta-lactamase inhibitor in the example; does not defeat MRSA resistance."
+    },
+    {
+      "id": "avibactam",
+      "name": "Avibactam",
+      "compatibleGunIds": ["ceftazidime"],
+      "description": "Beta-lactamase inhibitor paired with ceftazidime in the example."
+    }
+  ],
+  "microbes": [
+    {
+      "id": "strep-pyogenes",
+      "name": "Streptococcus pyogenes",
+      "group": "Gram-positive bacterium",
+      "emoji": "🦠",
+      "susceptibility": {"penicillin": "susceptible", "amoxicillin": "susceptible", "piperacillin": "susceptible", "ceftazidime": "resistant", "vancomycin": "susceptible"},
+      "addonOverrides": [],
+      "note": "Illustrative beta-lactam-sensitive target; real-world susceptibility varies by species and context."
+    },
+    {
+      "id": "enzyme-producer",
+      "name": "Beta-lactamase producer",
+      "group": "Bacterium (teaching archetype)",
+      "emoji": "🧫",
+      "susceptibility": {"penicillin": "resistant", "amoxicillin": "resistant", "piperacillin": "resistant", "ceftazidime": "resistant", "vancomycin": "susceptible"},
+      "addonOverrides": ["clavulanate", "tazobactam", "avibactam"],
+      "note": "A simplified enzyme-mediated resistance example; inhibitor activity is enzyme-specific."
+    },
+    {
+      "id": "mrsa",
+      "name": "MRSA",
+      "group": "Staphylococcus aureus",
+      "emoji": "🧬",
+      "susceptibility": {"penicillin": "resistant", "amoxicillin": "resistant", "piperacillin": "resistant", "ceftazidime": "resistant", "vancomycin": "susceptible"},
+      "addonOverrides": [],
+      "note": "Game rule: beta-lactamase inhibitors do not reverse MRSA's distinct beta-lactam resistance mechanism."
+    },
+    {
+      "id": "e-coli",
+      "name": "Escherichia coli",
+      "group": "Gram-negative bacterium",
+      "emoji": "🦠",
+      "susceptibility": {"penicillin": "resistant", "amoxicillin": "resistant", "piperacillin": "susceptible", "ceftazidime": "susceptible", "vancomycin": "resistant"},
+      "addonOverrides": [],
+      "note": "Game-only susceptibility profile; real isolates vary and require testing."
+    },
+    {
+      "id": "klebsiella-enzyme",
+      "name": "Klebsiella (enzyme example)",
+      "group": "Gram-negative bacterium",
+      "emoji": "🧫",
+      "susceptibility": {"penicillin": "resistant", "amoxicillin": "resistant", "piperacillin": "resistant", "ceftazidime": "resistant", "vancomycin": "resistant"},
+      "addonOverrides": ["clavulanate", "tazobactam", "avibactam"],
+      "note": "Simplified, non-specific inhibitor example; actual enzyme types and drug activity differ."
+    },
+    {
+      "id": "enterococcus",
+      "name": "Enterococcus (example)",
+      "group": "Gram-positive bacterium",
+      "emoji": "🔬",
+      "susceptibility": {"penicillin": "susceptible", "amoxicillin": "susceptible", "piperacillin": "susceptible", "ceftazidime": "resistant", "vancomycin": "susceptible"},
+      "addonOverrides": [],
+      "note": "Game-only profile; susceptibility varies among species and isolates."
+    }
+  ]
+}

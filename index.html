@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071b26">
+  <title>Shoot the Bug — Antimicrobial Arcade</title>
+  <style>
+    :root { color-scheme: dark; --bg:#071b26; --panel:#102b38; --line:#24505d; --ink:#e9f4f3; --muted:#a9c1c3; --mint:#74f0c1; --gold:#ffd166; --red:#ff7583; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(ellipse at top,#163a46 0,var(--bg) 62%); font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
+    button,select { font:inherit; }
+    button { cursor:pointer; }
+    .wrap { width:min(1100px,94vw); margin:0 auto; padding:24px 0 42px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:18px; }
+    h1 { margin:0; font-size:clamp(1.7rem,4vw,2.7rem); letter-spacing:-.04em; }
+    h1 span { color:var(--mint); }
+    .tag { border:1px solid var(--line); border-radius:999px; padding:6px 12px; color:var(--muted); font-size:.84rem; white-space:nowrap; }
+    .notice { margin:0 0 18px; border-left:3px solid var(--gold); padding:10px 14px; color:#d5dfd9; background:#172d32; border-radius:0 10px 10px 0; font-size:.9rem; }
+    .toolbar,.stats,.arena,.bottom { border:1px solid var(--line); background:linear-gradient(145deg,#102b38ee,#0c2530ee); border-radius:18px; box-shadow:0 12px 34px #0003; }
+    .toolbar { display:grid; grid-template-columns:1fr 1fr auto; align-items:end; gap:14px; padding:16px; }
+    label { display:block; color:var(--muted); font-size:.82rem; margin-bottom:6px; }
+    select { width:100%; min-height:44px; border:1px solid var(--line); border-radius:10px; padding:8px 12px; color:var(--ink); background:#091e28; }
+    .button { min-height:44px; border:0; border-radius:10px; padding:9px 16px; color:#06231e; background:var(--mint); font-weight:800; transition:transform .15s,filter .15s; }
+    .button:hover { transform:translateY(-1px); filter:brightness(1.07); }
+    .button:disabled { cursor:not-allowed; opacity:.5; transform:none; }
+    .button.secondary { color:var(--ink); background:#1b3d49; border:1px solid var(--line); }
+    .button.armed { color:#291d00; background:var(--gold); box-shadow:0 0 0 3px #ffd16633; }
+    .stats { display:flex; justify-content:space-between; gap:12px; margin:14px 0; padding:12px 16px; }
+    .stat { color:var(--muted); font-size:.9rem; }
+    .stat strong { color:var(--ink); font-size:1.15rem; margin-left:5px; }
+    .arena { min-height:360px; position:relative; overflow:hidden; padding:22px; background:radial-gradient(ellipse at center,#153a43,#0a222d 75%); }
+    .arena:before { content:""; position:absolute; inset:0; opacity:.13; pointer-events:none; background-image:linear-gradient(#6bdab522 1px,transparent 1px),linear-gradient(90deg,#6bdab522 1px,transparent 1px); background-size:32px 32px; }
+    .arena-head { position:relative; display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:18px; }
+    .arena-head h2 { margin:0; font-size:1.15rem; }
+    #targets { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .target { min-height:126px; text-align:left; color:var(--ink); border:1px solid #34717a; border-radius:15px; padding:14px; background:linear-gradient(145deg,#173b46,#102b36); transition:transform .15s,border-color .15s,opacity .2s; }
+    .target:hover:not(:disabled) { transform:translateY(-3px); border-color:var(--mint); }
+    .target:disabled { cursor:default; }
+    .target .emoji { display:block; font-size:1.8rem; margin-bottom:3px; }
+    .target .name { font-weight:800; display:block; }
+    .target .hint { color:var(--muted); font-size:.82rem; }
+    .target.hit-good { border-color:var(--mint); background:#143a33; }
+    .target.hit-bad { border-color:var(--red); background:#40242e; }
+    .target.done { opacity:.62; }
+    .bottom { display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center; margin-top:14px; padding:15px 16px; }
+    #message { color:var(--muted); min-height:25px; }
+    #message strong { color:var(--ink); }
+    .actions { display:flex; gap:9px; align-items:center; }
+    .legend { color:var(--muted); font-size:.82rem; margin:12px 4px 0; }
+    .loading { color:var(--gold); }
+    @media(max-width:700px) { .toolbar{grid-template-columns:1fr 1fr}.toolbar .button{grid-column:1/-1}.stats{flex-wrap:wrap}.arena{padding:15px}#targets{grid-template-columns:repeat(2,minmax(0,1fr))}.bottom{grid-template-columns:1fr}.actions{justify-content:stretch}.actions button{flex:1} }
+    @media(max-width:420px) { header{align-items:flex-start;flex-direction:column}.tag{white-space:normal}.target{padding:11px;min-height:118px} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><h1>🧫 Shoot <span>the Bug</span></h1><div class="tag">A tiny antimicrobial arcade</div></header>
+    <p class="notice"><strong>Learning game only:</strong> real antimicrobial susceptibility depends on the organism, infection site, testing, and clinical context. These simplified examples are not treatment advice.</p>
+    <section class="toolbar" aria-label="Loadout">
+      <div><label for="gun">Antimicrobial (your “gun”)</label><select id="gun" disabled></select></div>
+      <div><label for="addon">Companion drug (add-on)</label><select id="addon" disabled></select></div>
+      <button id="newGame" class="button secondary" disabled>New wave</button>
+    </section>
+    <section class="stats" aria-label="Game statistics">
+      <div class="stat">Score<strong id="score">0</strong></div><div class="stat">Wave<strong id="wave">1</strong></div><div class="stat">Targets left<strong id="left">—</strong></div><div class="stat">Add-on shots<strong id="charges">—</strong></div>
+    </section>
+    <section class="arena" aria-label="Microbe target area">
+      <div class="arena-head"><h2 id="waveTitle">Preparing the lab…</h2><span class="tag" id="loadoutLabel">Loading game data</span></div>
+      <div id="targets" aria-live="polite"><p class="loading">Loading microbes and antimicrobials…</p></div>
+    </section>
+    <section class="bottom">
+      <div id="message" role="status">Load your gear, then click a microbe to fire.</div>
+      <div class="actions"><button id="addonButton" class="button" disabled>⚡ Arm add-on</button><button id="reset" class="button secondary" disabled>Restart</button></div>
+    </section>
+    <p class="legend">Scoring: susceptible target +10 · resistant target −5 · correct companion drug against a susceptible enzyme-mediated resistance +10. Each click fires one shot.</p>
+  </main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const gunSelect = $('gun'), addonSelect = $('addon'), targetsEl = $('targets');
+  let data, score = 0, wave = 1, remaining = [], addonCharges = 0, addonArmed = false;
+
+  function selectedGun() { return data.antimicrobials.find(item => item.id === gunSelect.value); }
+  function compatibleAddons() { return data.addons.filter(item => item.compatibleGunIds.includes(gunSelect.value)); }
+  function renderAddonChoices() {
+    const options = compatibleAddons();
+    addonSelect.innerHTML = options.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+    addonSelect.disabled = options.length === 0;
+    if (!options.length) addonSelect.innerHTML = '<option value="">No companion in this demo</option>';
+  }
+  function setLoadoutLabel() {
+    const gun = selectedGun();
+    const addon = data.addons.find(item => item.id === addonSelect.value);
+    $('loadoutLabel').textContent = addon ? `${gun.name} + ${addon.name}` : gun.name;
+  }
+  function newWave() {
+    wave++;
+    const count = 4 + Math.floor(Math.random() * 3);
+    const pool = [...data.microbes];
+    remaining = [];
+    while (remaining.length < count && pool.length) {
+      const idx = Math.floor(Math.random() * pool.length);
+      remaining.push({...pool.splice(idx, 1)[0], resolved:false});
+    }
+    addonCharges = 3; addonArmed = false;
+    $('wave').textContent = wave;
+    $('waveTitle').textContent = `Wave ${wave} — choose your target`;
+    $('message').textContent = 'Click a microbe to fire. Arm the companion drug before firing if the target is resistant.';
+    renderTargets(); updateStats();
+  }
+  function startGame() {
+    score = 0; wave = 0; newWave();
+    $('reset').disabled = false;
+    $('newGame').disabled = false;
+  }
+  function renderTargets() {
+    targetsEl.innerHTML = '';
+    remaining.forEach((microbe, index) => {
+      const button = document.createElement('button');
+      button.className = `target${microbe.resolved ? ' done' : ''}`;
+      button.disabled = microbe.resolved;
+      button.setAttribute('aria-label', `Fire at ${microbe.name}`);
+      button.innerHTML = `<span class="emoji" aria-hidden="true">${microbe.emoji}</span><span class="name">${microbe.name}</span><span class="hint">${microbe.group} · click to fire</span>`;
+      button.addEventListener('click', () => fire(index, button));
+      targetsEl.appendChild(button);
+    });
+    updateStats();
+  }
+  function fire(index, button) {
+    const microbe = remaining[index];
+    if (!microbe || microbe.resolved) return;
+    const gun = selectedGun();
+    const addon = data.addons.find(item => item.id === addonSelect.value);
+    const status = microbe.susceptibility[gun.id] || 'resistant';
+    let points, result;
+    if (status === 'susceptible') {
+      points = 10; result = `${microbe.name} is susceptible to ${gun.name}: +10 points.`;
+    } else if (addonArmed && addon && addonCharges > 0 && microbe.addonOverrides?.includes(addon.id)) {
+      points = 10; addonCharges--;
+      result = `${microbe.name} has an enzyme-mediated resistance that ${addon.name} inhibits: +10 points.`;
+    } else {
+      points = -5;
+      result = status === 'resistant'
+        ? `${microbe.name} is resistant to ${gun.name}; ${addonArmed ? 'that add-on does not overcome this resistance' : 'try an appropriate companion drug if available'}: −5 points.`
+        : `${microbe.name} is not covered by this simplified example: −5 points.`;
+    }
+    score += points; microbe.resolved = true; addonArmed = false;
+    button.classList.add(points > 0 ? 'hit-good' : 'hit-bad');
+    button.innerHTML = `<span class="emoji" aria-hidden="true">${points > 0 ? '✨' : '💥'}</span><span class="name">${microbe.name}</span><span class="hint">${points > 0 ? '+10' : '−5'} points</span>`;
+    $('message').innerHTML = `<strong>${points > 0 ? 'Nice shot!' : 'Resistance!'}</strong> ${result}`;
+    updateStats();
+    if (remaining.every(item => item.resolved)) {
+      $('waveTitle').textContent = `Wave ${wave} cleared!`;
+      $('message').innerHTML += ' Choose <strong>New wave</strong> to keep playing.';
+      $('newGame').textContent = 'Next wave';
+    }
+  }
+  function updateStats() {
+    $('score').textContent = score;
+    $('left').textContent = remaining.filter(item => !item.resolved).length;
+    $('charges').textContent = addonCharges;
+    $('addonButton').disabled = !addonSelect.value || addonCharges <= 0 || remaining.every(item => item.resolved);
+    $('addonButton').classList.toggle('armed', addonArmed);
+    $('addonButton').textContent = addonArmed ? '⚡ Add-on armed — fire!' : `⚡ Arm add-on (${addonCharges})`;
+    setLoadoutLabel();
+  }
+  $('gun').addEventListener('change', () => { renderAddonChoices(); addonArmed = false; updateStats(); });
+  $('addon').addEventListener('change', () => { addonArmed = false; updateStats(); });
+  $('addonButton').addEventListener('click', () => {
+    if (!addonCharges || !addonSelect.value) return;
+    addonArmed = !addonArmed;
+    $('message').textContent = addonArmed ? `${data.addons.find(item => item.id === addonSelect.value).name} armed for your next shot.` : 'Add-on disarmed.';
+    updateStats();
+  });
+  $('newGame').addEventListener('click', () => { $('newGame').textContent = 'New wave'; newWave(); });
+  $('reset').addEventListener('click', startGame);
+
+  fetch('./antimicrobials.json').then(response => {
+    if (!response.ok) throw new Error('Could not load antimicrobials.json');
+    return response.json();
+  }).then(json => {
+    data = json;
+    gunSelect.innerHTML = data.antimicrobials.map(item => `<option value="${item.id}">${item.name} — ${item.class}</option>`).join('');
+    gunSelect.disabled = false;
+    renderAddonChoices();
+    $('newGame').disabled = false;
+    $('reset').disabled = false;
+    startGame();
+  }).catch(error => {
+    $('waveTitle').textContent = 'Could not load game data';
+    targetsEl.innerHTML = '<p>Run this page from a local web server so it can load <code>antimicrobials.json</code>. For example: <code>python -m http.server</code>.</p>';
+    $('message').textContent = error.message;
+  });
+})();
+</script>
+</body>
+</html>
